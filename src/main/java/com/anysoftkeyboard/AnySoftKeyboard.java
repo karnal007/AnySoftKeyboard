@@ -118,7 +118,7 @@ public class AnySoftKeyboard extends InputMethodService implements
     private static final String KEYBOARD_NOTIFICATION_ALWAYS = "1";
     private static final String KEYBOARD_NOTIFICATION_ON_PHYSICAL = "2";
     private static final String KEYBOARD_NOTIFICATION_NEVER = "3";
-    private static final long ONE_FRAME_DELAY = 1000l / 60l;
+    private static final long ONE_FRAME_DELAY = 1000L / 60L;
     private static final long CLOSE_DICTIONARIES_DELAY = 5 * ONE_FRAME_DELAY;
 
     private final AskPrefs mAskPrefs;
@@ -237,9 +237,8 @@ public class AnySoftKeyboard extends InputMethodService implements
     @Override
     public void onCreate() {
         super.onCreate();
-        mPrefs = PreferenceManager
-                .getDefaultSharedPreferences(getApplicationContext());
-        if (DeveloperUtils.hasTracingRequested(getApplicationContext())) {
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if ((!BuildConfig.DEBUG) && DeveloperUtils.hasTracingRequested(getApplicationContext())) {
             try {
                 DeveloperUtils.startTracing();
                 Toast.makeText(getApplicationContext(),
@@ -271,11 +270,9 @@ public class AnySoftKeyboard extends InputMethodService implements
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         updateRingerMode();
         // register to receive ringer mode changes for silent mode
-        registerReceiver(mSoundPreferencesChangedReceiver,
-                mSoundPreferencesChangedReceiver.createFilterToRegisterOn());
+        registerReceiver(mSoundPreferencesChangedReceiver, mSoundPreferencesChangedReceiver.createFilterToRegisterOn());
         // register to receive packages changes
-        registerReceiver(mPackagesChangedReceiver,
-                mPackagesChangedReceiver.createFilterToRegisterOn());
+        registerReceiver(mPackagesChangedReceiver, mPackagesChangedReceiver.createFilterToRegisterOn());
         mVibrator = ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE));
         loadSettings();
         mAskPrefs.addChangedListener(this);
@@ -401,19 +398,12 @@ public class AnySoftKeyboard extends InputMethodService implements
 
         final KeyboardTheme theme = KeyboardThemeFactory
                 .getCurrentKeyboardTheme(getApplicationContext());
-        final TypedArray a = theme.getPackageContext().obtainStyledAttributes(
-                null, R.styleable.AnyKeyboardViewTheme, 0,
-                theme.getThemeResId());
+        final TypedArray a = theme.getPackageContext().obtainStyledAttributes(null, R.styleable.AnyKeyboardViewTheme, 0, theme.getThemeResId());
         int closeTextColor = ContextCompat.getColor(this, R.color.candidate_other);
-        float fontSizePixel = getResources().getDimensionPixelSize(
-                R.dimen.candidate_font_height);
+        float fontSizePixel = getResources().getDimensionPixelSize(R.dimen.candidate_font_height);
         try {
-            closeTextColor = a.getColor(
-                    R.styleable.AnyKeyboardViewTheme_suggestionOthersTextColor,
-                    closeTextColor);
-            fontSizePixel = a.getDimension(
-                    R.styleable.AnyKeyboardViewTheme_suggestionTextSize,
-                    fontSizePixel);
+            closeTextColor = a.getColor(R.styleable.AnyKeyboardViewTheme_suggestionOthersTextColor, closeTextColor);
+            fontSizePixel = a.getDimension(R.styleable.AnyKeyboardViewTheme_suggestionTextSize, fontSizePixel);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -422,31 +412,27 @@ public class AnySoftKeyboard extends InputMethodService implements
         mCandidateCloseText = (TextView) candidateViewContainer.findViewById(R.id.close_suggestions_strip_text);
         View closeIcon = candidateViewContainer.findViewById(R.id.close_suggestions_strip_icon);
 
-        if (mCandidateCloseText != null && closeIcon != null) {// why? In API3
-            // it is not supported
-            closeIcon.setOnClickListener(new OnClickListener() {
-                // two seconds is enough.
-                private final static long DOUBLE_TAP_TIMEOUT = 2 * 1000;
+        closeIcon.setOnClickListener(new OnClickListener() {
+            // two seconds is enough.
+            private final static long DOUBLE_TAP_TIMEOUT = 2 * 1000 - 50;
 
-                public void onClick(View v) {
-                    mKeyboardHandler.removeMessages(KeyboardUIStateHandler.MSG_REMOVE_CLOSE_SUGGESTIONS_HINT);
-                    mCandidateCloseText.setVisibility(View.VISIBLE);
-                    mCandidateCloseText.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.close_candidates_hint_in));
-                    mKeyboardHandler.sendMessageDelayed(mKeyboardHandler.obtainMessage(KeyboardUIStateHandler.MSG_REMOVE_CLOSE_SUGGESTIONS_HINT), DOUBLE_TAP_TIMEOUT - 50);
-                }
-            });
+            public void onClick(View v) {
+                mKeyboardHandler.removeMessages(KeyboardUIStateHandler.MSG_REMOVE_CLOSE_SUGGESTIONS_HINT);
+                mCandidateCloseText.setVisibility(View.VISIBLE);
+                mCandidateCloseText.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.close_candidates_hint_in));
+                mKeyboardHandler.sendMessageDelayed(mKeyboardHandler.obtainMessage(KeyboardUIStateHandler.MSG_REMOVE_CLOSE_SUGGESTIONS_HINT), DOUBLE_TAP_TIMEOUT);
+            }
+        });
 
-            mCandidateCloseText.setTextColor(closeTextColor);
-            mCandidateCloseText.setTextSize(TypedValue.COMPLEX_UNIT_PX,
-                    fontSizePixel);
-            mCandidateCloseText.setOnClickListener(new OnClickListener() {
-                public void onClick(View v) {
-                    mKeyboardHandler.removeMessages(KeyboardUIStateHandler.MSG_REMOVE_CLOSE_SUGGESTIONS_HINT);
-                    mCandidateCloseText.setVisibility(View.GONE);
-                    abortCorrection(true, true);
-                }
-            });
-        }
+        mCandidateCloseText.setTextColor(closeTextColor);
+        mCandidateCloseText.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizePixel);
+        mCandidateCloseText.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                mKeyboardHandler.removeMessages(KeyboardUIStateHandler.MSG_REMOVE_CLOSE_SUGGESTIONS_HINT);
+                mCandidateCloseText.setVisibility(View.GONE);
+                abortCorrection(true, true);
+            }
+        });
 
         return candidateViewContainer;
     }
@@ -900,11 +886,9 @@ public class AnySoftKeyboard extends InputMethodService implements
             // I believe (can't confirm it) that candidates animation is kinda rare,
             // and it is better to load it on demand, then to keep it in memory always..
             if (shouldShow) {
-                mCandidatesParent.setAnimation(
-                        AnimationUtils.loadAnimation(this, R.anim.candidates_bottom_to_up_enter));
+                mCandidatesParent.setAnimation(AnimationUtils.loadAnimation(this, R.anim.candidates_bottom_to_up_enter));
             } else {
-                mCandidatesParent.setAnimation(
-                        AnimationUtils.loadAnimation(this, R.anim.candidates_up_to_bottom_exit));
+                mCandidatesParent.setAnimation(AnimationUtils.loadAnimation(this, R.anim.candidates_up_to_bottom_exit));
             }
         }
     }
@@ -2654,8 +2638,13 @@ public class AnySoftKeyboard extends InputMethodService implements
     public void onPress(int primaryCode) {
         InputConnection ic = getCurrentInputConnection();
         Log.d(TAG, "onPress:" + primaryCode);
-        if (mVibrationDuration > 0 && primaryCode != 0) {
-            mVibrator.vibrate(mVibrationDuration);
+        if (mVibrationDuration > 0 && primaryCode != 0 && mVibrator != null) {
+            try {
+                mVibrator.vibrate(mVibrationDuration);
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to interact with vibrator! Disabling for now.");
+                mVibrationDuration = 0;
+            }
         }
 
         if (primaryCode == KeyCodes.SHIFT) {
